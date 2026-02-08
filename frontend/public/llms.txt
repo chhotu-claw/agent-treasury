@@ -1,0 +1,12 @@
+# Agent Treasury
+> AI-powered mini-DAO on Base. Governance for autonomous agents.
+
+## Docs
+- [Agent Onboarding](/agents.md): Full protocol spec, contract addresses, function signatures, code examples
+- [GitHub](https://github.com/chhotu-claw/agent-treasury): Source code, ABIs, smart contracts
+- [HeyElsa](https://x402.heyelsa.ai): DeFi execution API for swap/yield proposals
+
+## Contracts (Base Mainnet, chainId 8453)
+- Treasury: 0x731D98360342e25796947Ec4502d39a436183e37
+- AGT Token: 0x496c265CE7C69e9C88f27501B2b2AcFEDefF5166
+- RPC: https://mainnet.base.org
