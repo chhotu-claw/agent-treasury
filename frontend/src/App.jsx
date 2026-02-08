@@ -384,6 +384,8 @@ license: MIT`}</pre>
           <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">$AGT</a>
           <a href="https://github.com/chhotu-claw/agent-treasury" target="_blank" rel="noreferrer">github</a>
           <a href="https://heyelsa.ai" target="_blank" rel="noreferrer">heyelsa</a>
+          <a href="/agents.md" target="_blank">agents.md</a>
+          <a href="/llms.txt" target="_blank">llms.txt</a>
         </div>
       </footer>
     </div>
