@@ -36,17 +36,21 @@ function App() {
     } catch (e) { setStatus("Connection failed: " + e.message); }
   };
 
+  // Load read-only data on mount (no wallet needed)
+  useEffect(() => { loadData(); }, []);
+  // Reload when wallet connects
   useEffect(() => { if (account && signer) loadData(); }, [account, signer]);
 
   const loadData = async () => {
-    if (!signer || CONTRACTS.TOKEN === "0x0000000000000000000000000000000000000000") {
-      setStatus("⚠️ Contracts not yet deployed. Fund the deployer wallet with Base Sepolia ETH, then deploy.");
+    if (CONTRACTS.TOKEN === "0x0000000000000000000000000000000000000000") {
+      setStatus("⚠️ Contracts not yet deployed.");
       return;
     }
     try {
-      const token = new ethers.Contract(CONTRACTS.TOKEN, tokenAbi, signer);
-      const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, signer);
-      setTokenBalance(ethers.formatEther(await token.balanceOf(account)));
+      const provider = signer || new ethers.JsonRpcProvider(RPC_URL);
+      const token = new ethers.Contract(CONTRACTS.TOKEN, tokenAbi, provider);
+      const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, provider);
+      if (account) setTokenBalance(ethers.formatEther(await token.balanceOf(account)));
       setTreasuryBalance(ethers.formatEther(await treasury.treasuryBalance()));
       const count = Number(await treasury.proposalCount());
       setProposalCount(count);
