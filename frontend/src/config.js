@@ -1,8 +1,8 @@
 export const CONTRACTS = {
-  TOKEN: "0x3b724Ab510eBC87F3D394D479500aAB5Cd451F5c",
-  TREASURY: "0xA4862E6509239732f428dCcf659C694f89Ea88ae",
+  TOKEN: "0x496c265CE7C69e9C88f27501B2b2AcFEDefF5166",
+  TREASURY: "0x731D98360342e25796947Ec4502d39a436183e37",
 };
-export const CHAIN_ID = 84532;
-export const CHAIN_NAME = "Base Sepolia";
-export const RPC_URL = "https://sepolia.base.org";
-export const EXPLORER_URL = "https://sepolia.basescan.org";
+export const CHAIN_ID = 8453;
+export const CHAIN_NAME = "Base";
+export const RPC_URL = "https://mainnet.base.org";
+export const EXPLORER_URL = "https://basescan.org";
