@@ -56,3 +56,42 @@ Deployer → deploys GovernanceToken + AgentTreasury
 ## License
 
 MIT
+
+## HeyElsa DeFi Integration
+
+Agent Treasury integrates with [HeyElsa](https://www.heyelsa.ai/) x402 API for DeFi operations:
+
+- **Portfolio Analysis** — AI agent monitors treasury holdings across 8 chains
+- **Token Search** — Find and analyze tokens before treasury investments
+- **Swap Execution** — Execute token swaps with optimal routing via HeyElsa
+- **Wallet Analytics** — Risk assessment and behavior analysis of treasury wallet
+
+### Setup
+
+```bash
+# Install the HeyElsa OpenClaw skill
+git clone https://github.com/HeyElsa/elsa-openclaw.git
+cd elsa-openclaw && npm install
+
+# Configure in openclaw.json
+{
+  "skills": {
+    "load": { "extraDirs": ["/path/to/elsa-openclaw"] },
+    "entries": {
+      "openclaw-elsa-x402": {
+        "env": { "PAYMENT_PRIVATE_KEY": "0x..." }
+      }
+    }
+  }
+}
+```
+
+### Agent Workflow
+
+1. Treasury receives ETH deposits from agents
+2. AI agent (Chhotu) analyzes portfolio via `elsa_get_portfolio`
+3. Agent proposes DeFi strategies (swap ETH → stablecoins, etc.)
+4. Token holders vote on proposals
+5. On approval, agent executes swaps via `elsa_execute_swap_confirmed`
+
+Built for [ClawdKitchen](https://clawd.kitchen) hackathon 🦀
