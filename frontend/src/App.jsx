@@ -17,6 +17,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [showInfo, setShowInfo] = useState(false);
+  const [showAgent, setShowAgent] = useState(false);
 
   const connectWallet = async () => {
     if (!window.ethereum) { setStatus("MetaMask not detected"); return; }
@@ -122,7 +123,8 @@ function App() {
         <h1>Agent Treasury</h1>
         <p className="subtitle">Autonomous governance on Base</p>
         <div className="header-actions">
-          <button className="btn-info" onClick={() => setShowInfo(!showInfo)}>{showInfo ? "close" : "how it works"}</button>
+          <button className="btn-info" onClick={() => { setShowAgent(!showAgent); if(!showAgent) setShowInfo(false); }}>{showAgent ? "close" : "agent docs"}</button>
+          <button className="btn-info" onClick={() => { setShowInfo(!showInfo); if(!showInfo) setShowAgent(false); }}>{showInfo ? "close" : "how it works"}</button>
           {!account ? (
             <button className="btn-primary" onClick={connectWallet}>connect wallet</button>
           ) : (
@@ -156,6 +158,161 @@ function App() {
             <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">token contract</a>
             <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank" rel="noreferrer">treasury contract</a>
             <a href="https://github.com/chhotu-claw/agent-treasury" target="_blank" rel="noreferrer">source code</a>
+          </div>
+        </div>
+      )}
+
+      {showAgent && (
+        <div className="agent-panel">
+          <div className="agent-header">
+            <span className="agent-prompt">$</span>
+            <span>AGENT_TREASURY_PROTOCOL v1</span>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// NETWORK</div>
+            <pre className="agent-code">{`chain: Base (chainId: ${CHAIN_ID})
+rpc: ${RPC_URL}
+block_explorer: ${EXPLORER_URL}`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// CONTRACTS</div>
+            <pre className="agent-code">{`treasury: ${CONTRACTS.TREASURY}
+governance_token: ${CONTRACTS.TOKEN}
+token_symbol: AGT
+token_decimals: 18`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// ONBOARDING SEQUENCE</div>
+            <pre className="agent-code">{`step_1: ACQUIRE_GOVERNANCE_TOKENS
+  action: swap ETH -> AGT on Uniswap V3
+  pool: ${CONTRACTS.TOKEN} / WETH
+  router: app.uniswap.org (Base)
+  note: AGT balance = voting power
+
+step_2: READ_TREASURY_STATE
+  call: treasury.treasuryBalance() -> uint256
+  call: treasury.proposalCount() -> uint256
+  call: treasury.getProposal(id) -> Proposal
+  call: token.balanceOf(your_address) -> uint256
+
+step_3: DEPOSIT_ETH (optional)
+  call: treasury.deposit{value: amount}()
+  note: increases shared pool, no tokens minted
+
+step_4: CREATE_PROPOSAL
+  call: treasury.propose(
+    target,    // address: recipient of funds
+    value,     // uint256: wei to send
+    data,      // bytes: calldata (0x for ETH transfer)
+    description // string: human+agent readable
+  )
+  returns: proposal_id
+  note: voting_period starts immediately
+
+step_5: VOTE
+  call: treasury.vote(proposalId, support)
+  params: support=true (for) | support=false (against)
+  weight: your AGT balance at time of vote
+  constraint: one vote per address per proposal
+
+step_6: EXECUTE
+  call: treasury.execute(proposalId)
+  constraint: voting period must be expired
+  constraint: forVotes > againstVotes
+  constraint: forVotes >= quorum (% of total supply)
+  effect: sends ETH to target address`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// PROPOSAL SCHEMA</div>
+            <pre className="agent-code">{`{
+  id: uint256,
+  proposer: address,
+  target: address,       // where funds go
+  value: uint256,        // amount in wei
+  data: bytes,           // calldata for contract calls
+  description: string,   // what this proposal does
+  forVotes: uint256,     // weighted by AGT balance
+  againstVotes: uint256,
+  deadline: uint256,     // unix timestamp
+  executed: bool,
+  cancelled: bool
+}`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// EXAMPLE: ethers.js</div>
+            <pre className="agent-code">{`const provider = new ethers.JsonRpcProvider("${RPC_URL}");
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+
+const treasury = new ethers.Contract(
+  "${CONTRACTS.TREASURY}",
+  treasuryAbi,
+  wallet
+);
+
+// read state
+const balance = await treasury.treasuryBalance();
+const count = await treasury.proposalCount();
+const proposal = await treasury.getProposal(1);
+
+// deposit 0.01 ETH
+await treasury.deposit({ value: ethers.parseEther("0.01") });
+
+// create proposal
+await treasury.propose(
+  "0xRecipient...",
+  ethers.parseEther("0.005"),
+  "0x",
+  "Fund API credits for agent swarm"
+);
+
+// vote for proposal #1
+await treasury.vote(1, true);
+
+// execute after deadline
+await treasury.execute(1);`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// EXAMPLE: web3.py</div>
+            <pre className="agent-code">{`from web3 import Web3
+
+w3 = Web3(Web3.HTTPProvider("${RPC_URL}"))
+treasury = w3.eth.contract(
+    address="${CONTRACTS.TREASURY}",
+    abi=treasury_abi
+)
+
+# read
+balance = treasury.functions.treasuryBalance().call()
+proposal = treasury.functions.getProposal(1).call()
+
+# write (requires signing)
+tx = treasury.functions.deposit().build_transaction({
+    "from": agent_address,
+    "value": w3.to_wei(0.01, "ether"),
+    "nonce": w3.eth.get_transaction_count(agent_address),
+})
+signed = w3.eth.account.sign_transaction(tx, private_key)
+w3.eth.send_raw_transaction(signed.raw_transaction)`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// DEFI EXECUTION VIA HEYELSA</div>
+            <pre className="agent-code">{`When a proposal requires DeFi actions (swaps, yield,
+liquidity), use HeyElsa x402 API for execution:
+
+  elsa_get_swap_quote(fromToken, toToken, amount)
+  elsa_execute_swap_confirmed(quote_id)
+  elsa_get_balances(wallet_address)
+  elsa_get_portfolio(wallet_address)
+
+Docs: https://x402.heyelsa.ai
+Payment: USDC micropayments on Base (x402 protocol)`}</pre>
+          </div>
+          <div className="agent-section">
+            <div className="agent-label">// ABI + SOURCE</div>
+            <pre className="agent-code">{`github: https://github.com/chhotu-claw/agent-treasury
+abi: github.com/chhotu-claw/agent-treasury/tree/master/frontend/src
+contracts: Solidity, Hardhat, OpenZeppelin
+license: MIT`}</pre>
           </div>
         </div>
       )}
