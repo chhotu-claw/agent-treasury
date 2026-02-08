@@ -12,7 +12,7 @@ function App() {
   const [treasuryBalance, setTreasuryBalance] = useState("0");
   const [proposals, setProposals] = useState([]);
   const [proposalCount, setProposalCount] = useState(0);
-  const [newProposal, setNewProposal] = useState({ description: "", recipient: "", amount: "" });
+  const [newProposal, setNewProposal] = useState({ description: "", target: "", value: "" });
   const [depositAmount, setDepositAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -40,7 +40,7 @@ function App() {
 
   const loadData = async () => {
     if (!signer || CONTRACTS.TOKEN === "0x0000000000000000000000000000000000000000") {
-      setStatus("Contracts not yet deployed — need Base Sepolia testnet ETH. Use a faucet to fund deployer.");
+      setStatus("⚠️ Contracts not yet deployed. Fund the deployer wallet with Base Sepolia ETH, then deploy.");
       return;
     }
     try {
@@ -53,10 +53,21 @@ function App() {
       const props = [];
       for (let i = 1; i <= count; i++) {
         const p = await treasury.getProposal(i);
-        props.push({ id: Number(p.id), proposer: p.proposer, description: p.description, recipient: p.recipient, amount: ethers.formatEther(p.amount), votesFor: ethers.formatEther(p.votesFor), votesAgainst: ethers.formatEther(p.votesAgainst), deadline: new Date(Number(p.deadline) * 1000).toLocaleString(), executed: p.executed, canceled: p.canceled });
+        props.push({
+          id: Number(p.id),
+          proposer: p.proposer,
+          target: p.target,
+          value: ethers.formatEther(p.value),
+          description: p.description,
+          forVotes: ethers.formatEther(p.forVotes),
+          againstVotes: ethers.formatEther(p.againstVotes),
+          deadline: new Date(Number(p.deadline) * 1000).toLocaleString(),
+          executed: p.executed,
+          cancelled: p.cancelled,
+        });
       }
       setProposals(props);
-    } catch (e) { setStatus("Error: " + e.message); }
+    } catch (e) { setStatus("Error loading: " + e.message); }
   };
 
   const deposit = async () => {
@@ -66,39 +77,46 @@ function App() {
       const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, signer);
       const tx = await treasury.deposit({ value: ethers.parseEther(depositAmount) });
       setStatus("Depositing..."); await tx.wait();
-      setStatus("Deposit successful!"); setDepositAmount(""); loadData();
+      setStatus("✅ Deposit successful!"); setDepositAmount(""); loadData();
     } catch (e) { setStatus("Failed: " + e.message); }
     setLoading(false);
   };
 
   const createProposal = async () => {
-    if (!newProposal.description || !newProposal.recipient || !newProposal.amount) return;
+    if (!newProposal.description || !newProposal.target || !newProposal.value) return;
     setLoading(true);
     try {
       const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, signer);
-      const tx = await treasury.createProposal(newProposal.description, newProposal.recipient, ethers.parseEther(newProposal.amount));
-      setStatus("Creating..."); await tx.wait();
-      setStatus("Proposal created!"); setNewProposal({ description: "", recipient: "", amount: "" }); loadData();
+      const tx = await treasury.propose(
+        newProposal.target,
+        ethers.parseEther(newProposal.value),
+        "0x", // empty calldata for simple ETH transfers
+        newProposal.description
+      );
+      setStatus("Creating proposal..."); await tx.wait();
+      setStatus("✅ Proposal created!"); setNewProposal({ description: "", target: "", value: "" }); loadData();
     } catch (e) { setStatus("Failed: " + e.message); }
     setLoading(false);
   };
 
-  const vote = async (id, support) => {
+  const voteOnProposal = async (id, support) => {
     setLoading(true);
     try {
       const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, signer);
-      const tx = await treasury.vote(id, support); setStatus("Voting..."); await tx.wait();
-      setStatus("Vote cast!"); loadData();
+      const tx = await treasury.vote(id, support);
+      setStatus("Voting..."); await tx.wait();
+      setStatus("✅ Vote cast!"); loadData();
     } catch (e) { setStatus("Failed: " + e.message); }
     setLoading(false);
   };
 
-  const execute = async (id) => {
+  const executeProposal = async (id) => {
     setLoading(true);
     try {
       const treasury = new ethers.Contract(CONTRACTS.TREASURY, treasuryAbi, signer);
-      const tx = await treasury.executeProposal(id); setStatus("Executing..."); await tx.wait();
-      setStatus("Executed!"); loadData();
+      const tx = await treasury.execute(id);
+      setStatus("Executing..."); await tx.wait();
+      setStatus("✅ Executed!"); loadData();
     } catch (e) { setStatus("Failed: " + e.message); }
     setLoading(false);
   };
@@ -107,70 +125,84 @@ function App() {
     <div className="app">
       <header>
         <h1>🏦 Agent Treasury</h1>
-        <p className="subtitle">AI-Powered Mini-DAO on Base</p>
+        <p className="subtitle">AI-Powered Mini-DAO on Base • ClawdKitchen Hackathon</p>
         {!account ? (
           <button className="btn-primary" onClick={connectWallet}>Connect Wallet</button>
         ) : (
           <span className="badge">🟢 {account.slice(0, 6)}...{account.slice(-4)}</span>
         )}
       </header>
+
       {status && <div className="status">{status}</div>}
+
       <div className="grid">
         <div className="card">
           <h2>📊 Dashboard</h2>
-          <div className="stat"><span>AGENT Tokens</span><strong>{parseFloat(tokenBalance).toLocaleString()}</strong></div>
-          <div className="stat"><span>Treasury</span><strong>{treasuryBalance} ETH</strong></div>
-          <div className="stat"><span>Proposals</span><strong>{proposalCount}</strong></div>
+          <div className="stat"><span>AGT Tokens</span><strong>{parseFloat(tokenBalance).toLocaleString()}</strong></div>
+          <div className="stat"><span>Treasury Balance</span><strong>{treasuryBalance} ETH</strong></div>
+          <div className="stat"><span>Total Proposals</span><strong>{proposalCount}</strong></div>
         </div>
+
         <div className="card">
           <h2>💰 Deposit ETH</h2>
           <input type="number" placeholder="Amount in ETH" value={depositAmount} onChange={e => setDepositAmount(e.target.value)} />
-          <button className="btn-primary" onClick={deposit} disabled={loading}>{loading ? "..." : "Deposit"}</button>
+          <button className="btn-primary" onClick={deposit} disabled={loading}>{loading ? "Processing..." : "Deposit"}</button>
         </div>
+
         <div className="card wide">
           <h2>📝 Create Proposal</h2>
-          <input placeholder="Description" value={newProposal.description} onChange={e => setNewProposal({...newProposal, description: e.target.value})} />
-          <input placeholder="Recipient (0x...)" value={newProposal.recipient} onChange={e => setNewProposal({...newProposal, recipient: e.target.value})} />
-          <input type="number" placeholder="Amount in ETH" value={newProposal.amount} onChange={e => setNewProposal({...newProposal, amount: e.target.value})} />
-          <button className="btn-primary" onClick={createProposal} disabled={loading}>{loading ? "..." : "Create Proposal"}</button>
+          <input placeholder="Description (e.g., Fund AI agent development)" value={newProposal.description} onChange={e => setNewProposal({...newProposal, description: e.target.value})} />
+          <input placeholder="Target address (0x...)" value={newProposal.target} onChange={e => setNewProposal({...newProposal, target: e.target.value})} />
+          <input type="number" placeholder="ETH amount to send" value={newProposal.value} onChange={e => setNewProposal({...newProposal, value: e.target.value})} />
+          <button className="btn-primary" onClick={createProposal} disabled={loading}>{loading ? "Processing..." : "Create Proposal"}</button>
         </div>
       </div>
+
       <div className="proposals">
         <h2>🗳️ Proposals</h2>
-        {proposals.length === 0 ? <p className="empty">No proposals yet</p> : proposals.map(p => (
-          <div key={p.id} className={`proposal ${p.executed ? "executed" : ""}`}>
-            <div className="proposal-header">
-              <span className="proposal-id">#{p.id}</span>
-              <span className={`proposal-status ${p.executed ? "done" : p.canceled ? "canceled" : "active"}`}>
-                {p.executed ? "✅ Executed" : p.canceled ? "❌ Canceled" : "🟡 Active"}
-              </span>
-            </div>
-            <p className="proposal-desc">{p.description}</p>
-            <div className="proposal-details">
-              <span>To: {p.recipient.slice(0,8)}...{p.recipient.slice(-4)}</span>
-              <span>{p.amount} ETH</span>
-              <span>Deadline: {p.deadline}</span>
-            </div>
-            <div className="votes">
-              <span className="vote-for">👍 {parseFloat(p.votesFor).toLocaleString()}</span>
-              <span className="vote-against">👎 {parseFloat(p.votesAgainst).toLocaleString()}</span>
-            </div>
-            {!p.executed && !p.canceled && (
-              <div className="proposal-actions">
-                <button className="btn-vote-for" onClick={() => vote(p.id, true)} disabled={loading}>Vote For</button>
-                <button className="btn-vote-against" onClick={() => vote(p.id, false)} disabled={loading}>Vote Against</button>
-                <button className="btn-execute" onClick={() => execute(p.id)} disabled={loading}>Execute</button>
+        {proposals.length === 0 ? (
+          <p className="empty">No proposals yet. Create one to get started!</p>
+        ) : (
+          proposals.map(p => (
+            <div key={p.id} className={`proposal ${p.executed ? "executed" : ""}`}>
+              <div className="proposal-header">
+                <span className="proposal-id">#{p.id}</span>
+                <span className={`proposal-status ${p.executed ? "done" : p.cancelled ? "canceled" : "active"}`}>
+                  {p.executed ? "✅ Executed" : p.cancelled ? "❌ Cancelled" : "🟡 Active"}
+                </span>
               </div>
-            )}
-          </div>
-        ))}
+              <p className="proposal-desc">{p.description}</p>
+              <div className="proposal-details">
+                <span>To: {p.target.slice(0, 8)}...{p.target.slice(-4)}</span>
+                <span>{p.value} ETH</span>
+                <span>Deadline: {p.deadline}</span>
+              </div>
+              <div className="votes">
+                <span className="vote-for">👍 {parseFloat(p.forVotes).toLocaleString()} AGT</span>
+                <span className="vote-against">👎 {parseFloat(p.againstVotes).toLocaleString()} AGT</span>
+              </div>
+              {!p.executed && !p.cancelled && (
+                <div className="proposal-actions">
+                  <button className="btn-vote-for" onClick={() => voteOnProposal(p.id, true)} disabled={loading}>Vote For</button>
+                  <button className="btn-vote-against" onClick={() => voteOnProposal(p.id, false)} disabled={loading}>Vote Against</button>
+                  <button className="btn-execute" onClick={() => executeProposal(p.id)} disabled={loading}>Execute</button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
+
       <footer>
-        <p>Built for ClawdKitchen Hackathon | Base Sepolia</p>
+        <p>Built for <strong>ClawdKitchen Hackathon</strong> | Base Sepolia Testnet</p>
         <div className="links">
-          <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank">Treasury</a>
-          <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank">Token</a>
-          <a href="https://github.com/AyushRungworker/agent-treasury" target="_blank">GitHub</a>
+          {CONTRACTS.TREASURY !== "0x0000000000000000000000000000000000000000" && (
+            <>
+              <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank" rel="noreferrer">Treasury ↗</a>
+              <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">Token ↗</a>
+            </>
+          )}
+          <a href="https://github.com/AyushRungworker/agent-treasury" target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </footer>
     </div>

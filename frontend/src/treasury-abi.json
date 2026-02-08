@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_token",
+        "name": "_govToken",
         "type": "address"
       }
     ],
@@ -18,9 +18,15 @@
         "internalType": "address",
         "name": "agent",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokensGranted",
+        "type": "uint256"
       }
     ],
-    "name": "AgentAdded",
+    "name": "AgentRegistered",
     "type": "event"
   },
   {
@@ -31,19 +37,6 @@
         "internalType": "address",
         "name": "agent",
         "type": "address"
-      }
-    ],
-    "name": "AgentRemoved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
       },
       {
         "indexed": false,
@@ -53,6 +46,38 @@
       }
     ],
     "name": "Deposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalCancelled",
     "type": "event"
   },
   {
@@ -72,21 +97,21 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
-        "name": "recipient",
+        "name": "target",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "value",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
       }
     ],
     "name": "ProposalCreated",
@@ -111,7 +136,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "proposalId",
+        "name": "id",
         "type": "uint256"
       },
       {
@@ -139,74 +164,13 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "agent",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
       }
     ],
-    "name": "addAgent",
+    "name": "cancel",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "agentCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "agents",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "createProposal",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -225,7 +189,7 @@
         "type": "uint256"
       }
     ],
-    "name": "executeProposal",
+    "name": "execute",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -234,7 +198,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "proposalId",
+        "name": "id",
         "type": "uint256"
       }
     ],
@@ -253,28 +217,33 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          },
+          {
             "internalType": "string",
             "name": "description",
             "type": "string"
           },
           {
-            "internalType": "address",
-            "name": "recipient",
-            "type": "address"
-          },
-          {
             "internalType": "uint256",
-            "name": "amount",
+            "name": "forVotes",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "votesFor",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "votesAgainst",
+            "name": "againstVotes",
             "type": "uint256"
           },
           {
@@ -289,7 +258,7 @@
           },
           {
             "internalType": "bool",
-            "name": "canceled",
+            "name": "cancelled",
             "type": "bool"
           }
         ],
@@ -303,10 +272,10 @@
   },
   {
     "inputs": [],
-    "name": "governanceToken",
+    "name": "govToken",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract IGovernanceToken",
         "name": "",
         "type": "address"
       }
@@ -385,28 +354,33 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      },
+      {
         "internalType": "string",
         "name": "description",
         "type": "string"
       },
       {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "forVotes",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "votesFor",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "votesAgainst",
+        "name": "againstVotes",
         "type": "uint256"
       },
       {
@@ -421,7 +395,7 @@
       },
       {
         "internalType": "bool",
-        "name": "canceled",
+        "name": "cancelled",
         "type": "bool"
       }
     ],
@@ -429,8 +403,42 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      },
+      {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
+      }
+    ],
+    "name": "propose",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "quorum",
+    "name": "quorumPercent",
     "outputs": [
       {
         "internalType": "uint256",
@@ -447,9 +455,21 @@
         "internalType": "address",
         "name": "agent",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenAmount",
+        "type": "uint256"
       }
     ],
-    "name": "removeAgent",
+    "name": "registerAgent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -458,11 +478,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_quorum",
+        "name": "_percent",
         "type": "uint256"
       }
     ],
-    "name": "setQuorum",
+    "name": "setQuorumPercent",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -476,6 +496,19 @@
       }
     ],
     "name": "setVotingPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

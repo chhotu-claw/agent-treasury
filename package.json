@@ -1,13 +1,17 @@
 {
   "name": "agent-treasury",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {},
   "devDependencies": {
-    "hardhat": "^3.0.0",
-    "@nomicfoundation/hardhat-ethers": "^4.0.0",
-    "ethers": "^6.0.0",
-    "@openzeppelin/contracts": "^5.4.0",
-    "dotenv": "^17.0.0"
-  }
+    "hardhat": "^2.22.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@openzeppelin/contracts": "^4.9.0",
+    "dotenv": "^16.0.0"
+  },
+  "description": "**AI-Powered Mini-DAO on Base** \u2014 Built for ClawdKitchen Hackathon",
+  "main": "hardhat.config.js",
+  "dependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

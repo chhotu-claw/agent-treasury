@@ -5,30 +5,30 @@ async function main() {
   console.log("Deploying with:", deployer.address);
   console.log("Balance:", hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)), "ETH");
 
-  const Token = await hre.ethers.getContractFactory("AgentToken");
-  const token = await Token.deploy();
+  // Deploy GovernanceToken
+  const GovernanceToken = await hre.ethers.getContractFactory("GovernanceToken");
+  const token = await GovernanceToken.deploy();
   await token.waitForDeployment();
   const tokenAddr = await token.getAddress();
-  console.log("AgentToken deployed to:", tokenAddr);
+  console.log("GovernanceToken deployed to:", tokenAddr);
 
-  const Treasury = await hre.ethers.getContractFactory("AgentTreasury");
-  const treasury = await Treasury.deploy(tokenAddr);
+  // Deploy AgentTreasury
+  const AgentTreasury = await hre.ethers.getContractFactory("AgentTreasury");
+  const treasury = await AgentTreasury.deploy(tokenAddr);
   await treasury.waitForDeployment();
   const treasuryAddr = await treasury.getAddress();
   console.log("AgentTreasury deployed to:", treasuryAddr);
 
-  await treasury.setVotingPeriod(300);
-  console.log("Voting period set to 5 minutes");
+  // Transfer token ownership to treasury so it can mint
+  const tx = await token.transferOwnership(treasuryAddr);
+  await tx.wait();
+  console.log("Token ownership transferred to Treasury");
 
-  await treasury.setQuorum(hre.ethers.parseEther("100"));
-  console.log("Quorum set to 100 tokens");
-
-  console.log("\n--- DEPLOYMENT SUMMARY ---");
-  console.log("AgentToken:", tokenAddr);
-  console.log("AgentTreasury:", treasuryAddr);
+  // Save addresses
+  const fs = require("fs");
+  const addresses = { GovernanceToken: tokenAddr, AgentTreasury: treasuryAddr, network: "baseSepolia", chainId: 84532 };
+  fs.writeFileSync("deployed-addresses.json", JSON.stringify(addresses, null, 2));
+  console.log("Addresses saved to deployed-addresses.json");
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main().catch((error) => { console.error(error); process.exitCode = 1; });

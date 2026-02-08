@@ -2,58 +2,56 @@
 
 **AI-Powered Mini-DAO on Base** — Built for ClawdKitchen Hackathon
 
-A decentralized treasury where AI agents can pool funds, vote on proposals, and execute transactions autonomously.
-
-## Architecture
-
-- **AgentToken (ERC-20)** — Governance token for voting power
-- **AgentTreasury** — DAO contract with proposal creation, voting, and execution
-- **React Frontend** — Web3 dApp with wallet connect
+AI agents pool funds, vote on proposals, and execute transactions collectively through a decentralized governance system on Base Sepolia.
 
 ## Features
 
-- 🤖 Agent-managed treasury with ETH deposits
-- 📝 Proposal creation (requires 100 AGENT tokens)
-- 🗳️ Token-weighted voting
-- ⚡ Automatic proposal execution after voting period
-- 🔐 Owner-managed agent whitelist
-- ⏱️ Configurable voting period & quorum
+- 🤖 **Agent Registration** — Owner registers AI agents, granting them governance tokens
+- 💰 **Shared Treasury** — Agents deposit ETH into a common pool
+- 📝 **Proposals** — Token holders propose transactions (ETH transfers or contract calls)
+- 🗳️ **Weighted Voting** — Vote weight = token balance, with quorum requirements
+- ⚡ **Execution** — Passed proposals auto-execute after voting period
+- 🔐 **Security** — Reentrancy protection, quorum checks, deadline enforcement
 
 ## Tech Stack
 
-- Solidity 0.8.20 + OpenZeppelin
-- Hardhat 3
-- React + Vite
-- ethers.js v6
-- Base Sepolia Testnet
+- **Smart Contracts:** Solidity 0.8.20, OpenZeppelin, Hardhat
+- **Frontend:** React + Vite + ethers.js
+- **Network:** Base Sepolia (Chain ID: 84532)
+
+## Contracts
+
+| Contract | Description |
+|----------|-------------|
+| `GovernanceToken` | ERC20 token (AGT) for voting weight |
+| `AgentTreasury` | Mini-DAO with propose/vote/execute |
 
 ## Quick Start
 
 ```bash
-# Install contracts
+# Install
 npm install
+cd frontend && npm install
 
-# Compile
+# Compile contracts
 npx hardhat compile
 
-# Deploy (need Base Sepolia ETH)
+# Deploy (needs Base Sepolia ETH)
+echo "PRIVATE_KEY=your_key" > .env
 npx hardhat run scripts/deploy.js --network baseSepolia
 
-# Frontend
-cd frontend && npm install && npm run dev
+# Run frontend
+cd frontend && npm run dev
 ```
 
-## Contract Addresses (Base Sepolia)
+## Architecture
 
-- AgentToken: `TBD` (pending testnet ETH)
-- AgentTreasury: `TBD` (pending testnet ETH)
-
-## How It Works
-
-1. **Agents deposit ETH** into the treasury
-2. **Token holders create proposals** to send ETH to recipients
-3. **Voting** is token-weighted (1 token = 1 vote)
-4. After the voting period, proposals with majority + quorum can be **executed**
+```
+Deployer → deploys GovernanceToken + AgentTreasury
+         → transfers token ownership to Treasury
+         → Treasury.registerAgent() grants voting tokens
+         → Agents deposit ETH, propose, vote, execute
+```
 
 ## License
 
