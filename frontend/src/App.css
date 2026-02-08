@@ -8,6 +8,20 @@ header h1 { font-size: 2.5rem; background: linear-gradient(90deg, #00d4ff, #7b61
 .btn-primary:hover { opacity: 0.9; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .badge { background: #1a2b1a; color: #4ade80; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; border: 1px solid #2d4a2d; }
+.header-actions { display: flex; gap: 0.75rem; justify-content: center; align-items: center; flex-wrap: wrap; }
+.btn-info { background: transparent; color: #7b61ff; border: 1px solid #7b61ff; padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; font-weight: 600; }
+.btn-info:hover { background: #7b61ff22; }
+.info-panel { background: #12131a; border: 1px solid #7b61ff44; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; line-height: 1.7; }
+.info-panel h2 { font-size: 1.5rem; margin-bottom: 0.75rem; color: #fff; }
+.info-panel h3 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; color: #00d4ff; }
+.info-panel p { color: #bbb; margin-bottom: 0.5rem; }
+.info-panel ol { padding-left: 1.25rem; color: #bbb; margin-bottom: 0.5rem; }
+.info-panel li { margin-bottom: 0.4rem; }
+.info-panel a { color: #7b61ff; text-decoration: none; }
+.info-panel a:hover { text-decoration: underline; }
+.info-links { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #222; }
+.info-links a { background: #1a1b2e; padding: 8px 16px; border-radius: 8px; color: #00d4ff; text-decoration: none; font-size: 0.9rem; border: 1px solid #333; }
+.info-links a:hover { border-color: #7b61ff; }
 .status { background: #1a1b2e; border: 1px solid #333; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 1.5rem; color: #00d4ff; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
 .card { background: #12131a; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; }

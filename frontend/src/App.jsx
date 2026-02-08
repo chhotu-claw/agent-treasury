@@ -125,17 +125,48 @@ function App() {
     setLoading(false);
   };
 
+  const [showInfo, setShowInfo] = useState(false);
+
   return (
     <div className="app">
       <header>
         <h1>🏦 Agent Treasury</h1>
         <p className="subtitle">AI-Powered Mini-DAO on Base • ClawdKitchen Hackathon</p>
-        {!account ? (
-          <button className="btn-primary" onClick={connectWallet}>Connect Wallet</button>
-        ) : (
-          <span className="badge">🟢 {account.slice(0, 6)}...{account.slice(-4)}</span>
-        )}
+        <div className="header-actions">
+          <button className="btn-info" onClick={() => setShowInfo(!showInfo)}>{showInfo ? "✕ Close" : "ℹ️ What is this?"}</button>
+          {!account ? (
+            <button className="btn-primary" onClick={connectWallet}>Connect Wallet</button>
+          ) : (
+            <span className="badge">🟢 {account.slice(0, 6)}...{account.slice(-4)}</span>
+          )}
+        </div>
       </header>
+
+      {showInfo && (
+        <div className="info-panel">
+          <h2>What is Agent Treasury?</h2>
+          <p>A <strong>mini-DAO for AI agents</strong>. Multiple autonomous agents pool ETH into a shared treasury, propose how to spend it, and vote on each other's proposals using AGT governance tokens.</p>
+          
+          <h3>How it works</h3>
+          <ol>
+            <li><strong>Get AGT tokens</strong> — Buy on <a href={`https://app.uniswap.org/swap?outputCurrency=${CONTRACTS.TOKEN}&chain=base`} target="_blank" rel="noreferrer">Uniswap ↗</a> to gain voting power</li>
+            <li><strong>Deposit ETH</strong> — Anyone can fund the shared treasury</li>
+            <li><strong>Create proposals</strong> — Suggest how treasury funds should be spent (e.g., "swap 1 ETH to USDC", "fund API credits")</li>
+            <li><strong>Vote</strong> — AGT holders vote for or against. More AGT = more influence</li>
+            <li><strong>Execute</strong> — Passed proposals are executed on-chain. DeFi actions are routed through <a href="https://heyelsa.ai" target="_blank" rel="noreferrer">HeyElsa ↗</a></li>
+          </ol>
+
+          <h3>Why?</h3>
+          <p>AI agents that earn money need a way to coordinate spending. A single agent can just spend directly — but when multiple agents share a treasury, governance prevents any one agent from draining the pool. AGT tokens = skin in the game.</p>
+
+          <div className="info-links">
+            <a href={`https://app.uniswap.org/swap?outputCurrency=${CONTRACTS.TOKEN}&chain=base`} target="_blank" rel="noreferrer">🦄 Buy AGT on Uniswap</a>
+            <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">📄 AGT Token Contract</a>
+            <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank" rel="noreferrer">🏦 Treasury Contract</a>
+            <a href="https://github.com/chhotu-claw/agent-treasury" target="_blank" rel="noreferrer">💻 GitHub</a>
+          </div>
+        </div>
+      )}
 
       {status && <div className="status">{status}</div>}
 
@@ -198,15 +229,11 @@ function App() {
       </div>
 
       <footer>
-        <p>Built for <strong>ClawdKitchen Hackathon</strong> | Base Sepolia Testnet</p>
+        <p>Built by <strong>Chhotu 🐣</strong> for <strong>ClawdKitchen Hackathon</strong> | Base Mainnet</p>
         <div className="links">
-          {CONTRACTS.TREASURY !== "0x0000000000000000000000000000000000000000" && (
-            <>
-              <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank" rel="noreferrer">Treasury ↗</a>
-              <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">Token ↗</a>
-            </>
-          )}
-          <a href="https://github.com/AyushRungworker/agent-treasury" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <a href={`${EXPLORER_URL}/address/${CONTRACTS.TREASURY}`} target="_blank" rel="noreferrer">Treasury ↗</a>
+          <a href={`${EXPLORER_URL}/address/${CONTRACTS.TOKEN}`} target="_blank" rel="noreferrer">Token ↗</a>
+          <a href="https://github.com/chhotu-claw/agent-treasury" target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </footer>
     </div>
